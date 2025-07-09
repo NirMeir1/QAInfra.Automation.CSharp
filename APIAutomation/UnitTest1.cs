@@ -1,5 +1,5 @@
 using System.Net;
-
+using APIAutomation.models;
 using NUnit.Framework;
 
 namespace APIAutomation;
@@ -15,10 +15,5 @@ public class Tests : ApiTestBase
             Assert.That(response.StatusCode, Is.EqualTo(HttpStatusCode.OK));
             Assert.That(response.Data?.Id, Is.EqualTo(1));
         });
-    }
-
-    private class Post
-    {
-        public int Id { get; set; }
     }
 }
