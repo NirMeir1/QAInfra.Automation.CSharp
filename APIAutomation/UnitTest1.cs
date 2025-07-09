@@ -1,7 +1,6 @@
 using System.Net;
 
 using NUnit.Framework;
-using RestSharp;
 
 namespace APIAutomation;
 
