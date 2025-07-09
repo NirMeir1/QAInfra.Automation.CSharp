@@ -5,14 +5,12 @@ using RestSharp;
 
 namespace APIAutomation;
 
-public class Tests
+public class Tests : ApiTestBase
 {
     [Test]
     public async Task GetPostReturnsId1()
     {
-        var client = new RestClient("https://jsonplaceholder.typicode.com");
-        var request = new RestRequest("/posts/1", Method.Get);
-        var response = await client.ExecuteGetAsync<Post>(request);
+        var response = await GetAsync<Post>("/posts/1");
         Assert.Multiple(() =>
         {
             Assert.That(response.StatusCode, Is.EqualTo(HttpStatusCode.OK));
