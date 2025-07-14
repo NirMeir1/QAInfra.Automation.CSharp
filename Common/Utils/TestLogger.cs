@@ -7,20 +7,13 @@ namespace Common.Utils;
 /// </summary>
 public class TestLogger
 {
-    private readonly TestContext _context;
-
-    public TestLogger(TestContext context)
+    public static void Info(string message)
     {
-        _context = context;
+        TestContext.WriteLine($"{DateTime.UtcNow:O} [INFO] {message}");
     }
 
-    public void Info(string message)
+    public static void Error(string message)
     {
-        _context.WriteLine($"{DateTime.UtcNow:O} [INFO] {message}");
-    }
-
-    public void Error(string message)
-    {
-        _context.WriteLine($"{DateTime.UtcNow:O} [ERROR] {message}");
+        TestContext.WriteLine($"{DateTime.UtcNow:O} [ERROR] {message}");
     }
 }

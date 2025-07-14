@@ -17,7 +17,6 @@ public abstract class ApiTestBase
     [OneTimeSetUp]
     public void GlobalSetUp()
     {
-        Log = new TestLogger(TestContext.CurrentContext);
         var options = new RestClientOptions("https://jsonplaceholder.typicode.com");
         CustomizeClientOptions(options);
         Client = new RestClient(options);
@@ -46,7 +45,7 @@ public abstract class ApiTestBase
         var response = await Client.ExecuteAsync<T>(request);
         if (!response.IsSuccessful)
         {
-            Log.Error($"Request to {resource} failed with {response.StatusCode}");
+            TestLogger.Error($"Request to {resource} failed with {response.StatusCode}");
             throw new AssertionException($"Request failed: {response.StatusCode}");
         }
         return response;

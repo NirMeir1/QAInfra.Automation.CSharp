@@ -1,6 +1,7 @@
 using Common.Utils;
 using Microsoft.Playwright;
 using NUnit.Framework;
+using NUnit.Framework.Interfaces;
 
 namespace UIAutomation.Infra;
 
@@ -20,8 +21,7 @@ public abstract class PlaywrightTestBase
     [OneTimeSetUp]
     public async Task GlobalSetUp()
     {
-        PlaywrightInstance = await Microsoft.Playwright.Playwright.CreateAsync();
-        Browser = await CreateBrowserAsync();
+        PlaywrightInstance = await Playwright.CreateAsync();
     }
 
     /// <summary>
@@ -44,8 +44,8 @@ public abstract class PlaywrightTestBase
     /// </summary>
     protected virtual BrowserTypeLaunchOptions CreateBrowserOptions() => new()
     {
-        Headless = true,
-        Args = new[] { "--ignore-certificate-errors" }
+        Headless = false,
+        Args = []
     };
 
     /// <summary>
@@ -66,7 +66,7 @@ public abstract class PlaywrightTestBase
     [SetUp]
     public async Task SetUpAsync()
     {
-        Log = new TestLogger(TestContext.CurrentContext);
+        Browser = await CreateBrowserAsync();
         Context = await Browser.NewContextAsync(CreateContextOptions());
         Page = await Context.NewPageAsync();
         await BeforeTestAsync();
@@ -77,21 +77,29 @@ public abstract class PlaywrightTestBase
     {
         if (TestContext.CurrentContext.Result.Outcome.Status == TestStatus.Failed)
         {
-            var dir = FileHelper.EnsureArtifactsDirectory(TestContext.CurrentContext.Test.Name);
-            var screenshotPath = Path.Combine(dir, "screenshot.png");
-            var htmlPath = Path.Combine(dir, "page.html");
-            await Page.ScreenshotAsync(new PageScreenshotOptions { Path = screenshotPath, FullPage = true });
-            await File.WriteAllTextAsync(htmlPath, await Page.ContentAsync());
-            Log.Error($"Saved failure artifacts to {dir}");
+            try
+            {
+                var dir = FileHelper.EnsureArtifactsDirectory(TestContext.CurrentContext.Test.Name);
+                var screenshotPath = Path.Combine(dir, "screenshot.png");
+                var htmlPath = Path.Combine(dir, "page.html");
+                await Page.ScreenshotAsync(new PageScreenshotOptions { Path = screenshotPath, FullPage = true });
+                await File.WriteAllTextAsync(htmlPath, await Page.ContentAsync());
+                TestLogger.Error($"Saved failure artifacts to {dir}");
+            }
+            catch (Exception ex)
+            {
+                TestLogger.Error($"Failed to close page: {ex.Message}");
+            }
+            
         }
         await AfterTestAsync();
-        await Context.CloseAsync();
+        try { if (Context != null) await Context.CloseAsync(); } catch { }
+        try { if (Browser != null) await Browser.CloseAsync(); } catch { }
     }
 
     [OneTimeTearDown]
-    public async Task GlobalTearDownAsync()
+    public void GlobalTearDownAsync()
     {
-        await Browser.CloseAsync();
-        PlaywrightInstance.Dispose();
+        PlaywrightInstance?.Dispose();
     }
 }

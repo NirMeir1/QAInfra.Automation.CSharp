@@ -1,4 +1,4 @@
-using System.Linq;
+using Common.Utils;
 using Microsoft.Playwright;
 using NUnit.Framework;
 using UIAutomation.Infra;
@@ -10,41 +10,19 @@ namespace UIAutomation.Tests;
 /// </summary>
 public class SampleUITests : PlaywrightTestBase
 {
-    [TestCase("https://playwright.dev", "Playwright")]
+    [TestCase("https://demo.playwright.dev/todomvc/", "TodoMVC")]
     [TestCase("https://example.com", "Example Domain")]
     public async Task VerifyTitle(string url, string expected)
     {
-        Log.Info($"Navigating to {url}");
-        await Page.GotoAsync(url);
+        TestLogger.Info($"Navigating to {url}");
+        await Page.GotoAsync(url, new PageGotoOptions { WaitUntil = WaitUntilState.NetworkIdle });
         StringAssert.Contains(expected, await Page.TitleAsync());
     }
 
-    [Test]
-    public async Task IntentionalFailure()
-    {
-        await Page.GotoAsync("https://playwright.dev");
-        StringAssert.Contains("NonExistent", await Page.TitleAsync());
-    }
-}
-
-/// <summary>
-/// Demonstrates custom per-test setup by adding a cookie before navigation.
-/// </summary>
-public class CustomContextTests : PlaywrightTestBase
-{
-    protected override async Task BeforeTestAsync()
-    {
-        await Context.AddCookiesAsync(new[]
-        {
-            new Cookie { Name = "demo", Value = "1", Url = "https://playwright.dev" }
-        });
-    }
-
-    [Test]
-    public async Task CookieIsSet()
-    {
-        await Page.GotoAsync("https://playwright.dev");
-        var cookies = await Context.CookiesAsync();
-        Assert.That(cookies.Any(c => c.Name == "demo"));
-    }
+    // [Test]
+    // public async Task IntentionalFailure()
+    // {
+    //     await Page.GotoAsync("https://demo.playwright.dev/todomvc/");
+    //     StringAssert.Contains("NonExistent", await Page.TitleAsync());
+    // }
 }

@@ -1,5 +1,4 @@
 using NUnit.Framework;
-using System.IO;
 namespace Common.Utils;
 
 public static class FileHelper
@@ -8,10 +7,16 @@ public static class FileHelper
     /// Returns a directory under TestContext.ResultsDirectory to store artifacts.
     /// Ensures the directory exists.
     /// </summary>
-    public static string EnsureArtifactsDirectory(string? subFolder = null)
+    public static string EnsureArtifactsDirectory(string subFolder)
     {
-        var dir = Path.Combine(TestContext.CurrentContext.WorkDirectory, "TestResults", subFolder ?? string.Empty);
+        // Replace invalid filename characters with underscores
+        foreach (var c in Path.GetInvalidFileNameChars())
+        {
+            subFolder = subFolder.Replace(c, '_');
+        }
+        var dir = Path.Combine("TestResults", subFolder);
         Directory.CreateDirectory(dir);
         return dir;
     }
+
 }
